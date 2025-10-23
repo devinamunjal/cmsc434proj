@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Home - Student Budgeting App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Home</h1>
+    <a href="profile.html" class="icon">👤</a>
+  </header>
+
+  <main>
+    <div class="card">
+      <p class="muted">Your Balance</p>
+      <h2 id="balance">$0.00</h2>
+      <button class="btn primary" id="addMoneyBtn">Add Money</button>
+    </div>
+
+    <div class="menu">
+      <a href="expenses.html">💸 Expenses</a>
+      <a href="budget.html">📊 Budget</a>
+      <a href="activity.html">➕ Activity</a>
+      <a href="todo.html">📝 To-Do</a>
+    </div>
+  </main>
+
+<nav class="tabbar">
+  <a href="home.html" class="active">🏠<span>Home</span></a>
+  <a href="profile.html">👤<span>Profile</span></a>
+  <a href="activity.html">⚙️<span>Add</span></a>
+  <a href="todo.html">🗓️<span>To-Do</span></a>
+  <a href="expenses.html">💰<span>Expenses</span></a>
+  <a href="budget.html">📈<span>Budget</span></a>
+</nav>
+
+  <script src="shared.js"></script>
+  <script>
+    renderHome();
+    document.getElementById("addMoneyBtn").onclick = ()=> {
+      const txns = load(K.TXNS, []);
+      txns.push({id:Date.now(), kind:"income", category:"Other", amount:10,
+                 date:new Date().toISOString().slice(0,10), note:"Manual add"});
+      save(K.TXNS, txns);
+      renderHome();
+      alert("Added $10 income");
+    };
+  </script>
+</body>
+</html>

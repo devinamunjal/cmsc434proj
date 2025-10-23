@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Budget - Student Budgeting App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><h1>Budget</h1><a href="home.html">🏠</a></header>
+
+  <main>
+    <ul id="budgetList" class="list"></ul>
+    <p>Total Spent: <b id="budgetTotal">$0.00</b></p>
+  </main>
+
+<nav class="tabbar">
+  <a href="home.html" class="active">🏠<span>Home</span></a>
+  <a href="profile.html">👤<span>Profile</span></a>
+  <a href="activity.html">⚙️<span>Add</span></a>
+  <a href="todo.html">🗓️<span>To-Do</span></a>
+  <a href="expenses.html">💰<span>Expenses</span></a>
+  <a href="budget.html">📈<span>Budget</span></a>
+</nav>
+
+  <script src="shared.js"></script>
+  <script>
+    const budgets = load(K.BUDGETS,{});
+    const spent = {};
+    load(K.TXNS,[]).forEach(t=>{
+      if(t.kind==='expense')
+        spent[t.category]=(spent[t.category]||0)+t.amount;
+    });
+    let total=0;
+    for(const c in budgets){
+      const b=budgets[c], s=spent[c]||0; total+=s;
+      budgetList.insertAdjacentHTML("beforeend",`
+        <li>
+          <div>${c}<div class="muted">Spent: $${s.toFixed(2)}</div></div>
+          <div>${b-s<0?'<span class="money negative">Over</span>':'<span class="money positive">Left</span>'} $${Math.abs(b-s).toFixed(2)}</div>
+        </li>
+      `);
+    }
+    budgetTotal.textContent="$"+total.toFixed(2);
+  </script>
+</body>
+</html>

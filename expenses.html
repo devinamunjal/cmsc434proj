@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Expenses - Student Budgeting App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><h1>Expenses</h1><a href="home.html">🏠</a></header>
+
+  <main>
+    <ul id="expList" class="list"></ul>
+    <p>Total Spent: <b id="expTotal">$0.00</b></p>
+  </main>
+
+<nav class="tabbar">
+  <a href="home.html" class="active">🏠<span>Home</span></a>
+  <a href="profile.html">👤<span>Profile</span></a>
+  <a href="activity.html">⚙️<span>Add</span></a>
+  <a href="todo.html">🗓️<span>To-Do</span></a>
+  <a href="expenses.html">💰<span>Expenses</span></a>
+  <a href="budget.html">📈<span>Budget</span></a>
+</nav>
+
+  <script src="shared.js"></script>
+  <script>
+    const txns = load(K.TXNS,[]).filter(t=>t.kind==='expense');
+    let total=0;
+    expList.innerHTML='';
+    txns.forEach(t=>{
+      total+=t.amount;
+      expList.insertAdjacentHTML("beforeend",`
+        <li>
+          <div>${t.note||t.category}<div class="muted">${t.date}</div></div>
+          <div class="money negative">-$${t.amount.toFixed(2)}</div>
+        </li>
+      `);
+    });
+    expTotal.textContent="$"+total.toFixed(2);
+  </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>To-Do - Student Budgeting App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><h1>To-Do</h1><a href="home.html">🏠</a></header>
+
+  <main>
+    <div class="row">
+      <input id="todoText" class="input" placeholder="New budgeting task...">
+      <button class="btn" id="todoAdd">Add</button>
+    </div>
+    <ul id="todoList" class="list"></ul>
+  </main>
+
+<nav class="tabbar">
+  <a href="home.html" class="active">🏠<span>Home</span></a>
+  <a href="profile.html">👤<span>Profile</span></a>
+  <a href="activity.html">⚙️<span>Add</span></a>
+  <a href="todo.html">🗓️<span>To-Do</span></a>
+  <a href="expenses.html">💰<span>Expenses</span></a>
+  <a href="budget.html">📈<span>Budget</span></a>
+</nav>
+
+  <script src="shared.js"></script>
+  <script>
+    function renderTodos(){
+      const todos = load(K.TODOS, []);
+      todoList.innerHTML = "";
+      todos.forEach(t=>{
+        todoList.insertAdjacentHTML("beforeend", `
+          <li>
+            <label><input type="checkbox" data-id="${t.id}" ${t.done?"checked":""}> ${t.text}</label>
+            <button class="btn small del" data-id="${t.id}">Delete</button>
+          </li>
+        `);
+      });
+    }
+    renderTodos();
+
+    todoAdd.onclick = ()=>{
+      const txt = todoText.value.trim(); if(!txt) return;
+      const todos = load(K.TODOS, []);
+      todos.push({id:Date.now(), text:txt, done:false});
+      save(K.TODOS,todos); todoText.value=""; renderTodos();
+    };
+
+    todoList.onclick = e=>{
+      if(e.target.classList.contains("del")){
+        const id = +e.target.dataset.id;
+        save(K.TODOS, load(K.TODOS,[]).filter(t=>t.id!==id));
+        renderTodos();
+      }
+    };
+    todoList.onchange = e=>{
+      if(e.target.type==="checkbox"){
+        const id = +e.target.dataset.id;
+        const todos = load(K.TODOS,[]);
+        const t = todos.find(x=>x.id===id);
+        if(t) t.done = e.target.checked;
+        save(K.TODOS,todos);
+        renderTodos();
+      }
+    };
+  </script>
+</body>
+</html>

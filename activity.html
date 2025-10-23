@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Activity - Student Budgeting App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><h1>Activity</h1><a href="home.html">🏠</a></header>
+
+  <main>
+    <div class="card">
+      <h3>Quick Add</h3>
+      <form id="txnForm">
+        <label><input type="radio" name="kind" value="expense" checked> Expense</label>
+        <label><input type="radio" name="kind" value="income"> Income</label>
+        <label>Category</label>
+        <select id="categorySel" class="input">
+          <option>Food</option><option>Transport</option><option>Health</option>
+          <option>Groceries</option><option>Housing</option><option>Utilities</option><option>Other</option>
+        </select>
+        <label>Amount</label><input id="amountInp" class="input" type="number" step="0.01">
+        <label>Date</label><input id="dateInp" class="input" type="date">
+        <label>Note</label><input id="noteInp" class="input">
+        <button class="btn primary">Add</button>
+      </form>
+    </div>
+  </main>
+
+<nav class="tabbar">
+  <a href="home.html" class="active">🏠<span>Home</span></a>
+  <a href="profile.html">👤<span>Profile</span></a>
+  <a href="activity.html">⚙️<span>Add</span></a>
+  <a href="todo.html">🗓️<span>To-Do</span></a>
+  <a href="expenses.html">💰<span>Expenses</span></a>
+  <a href="budget.html">📈<span>Budget</span></a>
+</nav>
+
+  <script src="shared.js"></script>
+  <script>
+    txnForm.onsubmit = e=>{
+      e.preventDefault();
+      const txns = load(K.TXNS, []);
+      txns.push({
+        id:Date.now(),
+        kind:e.target.kind.value,
+        category:categorySel.value,
+        amount:parseFloat(amountInp.value),
+        date:dateInp.value||new Date().toISOString().slice(0,10),
+        note:noteInp.value.trim()
+      });
+      save(K.TXNS,txns);
+      alert("Transaction added!");
+      e.target.reset();
+    };
+  </script>
+</body>
+</html>

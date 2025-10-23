@@ -1,0 +1,116 @@
+/* === iPhone-friendly layout (edge-to-edge, no weird gaps) === */
+:root{
+  --bg:#f6f8f7;
+  --panel:#eef5ef;
+  --ink:#0f172a;
+  --muted:#6b7280;
+  --accent:#2f855a;
+  --danger:#b91c1c;
+  --ring:#d1d5db;
+  --tabbar-h:62px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:ui-sans-serif,-apple-system,system-ui,Segoe UI,Roboto,Arial;
+}
+
+/* Phone shell: fills the window like a real app */
+.app{
+  max-width: 100%;
+  height: 100svh;                 /* iOS small-viewport units fix */
+  display:flex;
+  flex-direction:column;
+  background:#fff;
+}
+
+/* Header */
+header{
+  position:sticky; top:0; z-index:10;
+  background:#e7f3e9;
+  border-bottom:1px solid #dbe7de;
+  padding:12px 16px calc(12px + env(safe-area-inset-top,0px));
+  display:flex; align-items:center; justify-content:center;
+}
+header .title{font-size:18px; font-weight:800; margin:0}
+header .right, header .left{
+  position:absolute; top:0; bottom:0; display:flex; align-items:center;
+  padding:0 12px;
+}
+header .left{left:0} header .right{right:0}
+header a.icon{font-size:18px; text-decoration:none; color:#1f2937}
+
+/* Scroll area */
+main{
+  flex:1 1 auto;
+  overflow:auto; -webkit-overflow-scrolling:touch;
+  padding:16px;
+  padding-bottom: calc(var(--tabbar-h) + 16px + env(safe-area-inset-bottom,0px));
+}
+
+/* Content container: centers cards on small screens, looks good on laptop */
+.container{
+  width:100%;
+  max-width: 380px;               /* sweet spot for iPhone sizes */
+  margin: 0 auto;
+}
+
+/* Card / inputs / buttons */
+.card{
+  background:var(--panel);
+  border:1px solid #e6efe7;
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 1px 0 rgba(0,0,0,.02);
+}
+
+label{display:block; font-size:13px; color:var(--muted); margin:10px 0 6px}
+.input, select, textarea{
+  width:100%; padding:12px 14px; border:1px solid var(--ring);
+  border-radius:10px; font-size:16px; background:#fff;
+}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  border:1px solid var(--ring); background:#fff; color:#111;
+  padding:12px 16px; border-radius:10px; font-weight:600; cursor:pointer;
+}
+.btn.primary{background:var(--accent); color:#fff; border-color:transparent}
+.btn.small{padding:8px 12px; font-size:14px}
+
+/* Lists */
+.list{list-style:none; margin:0; padding:0}
+.list li{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  padding:12px 2px; border-bottom:1px dashed #e5e7eb;
+}
+.money.negative{color:var(--danger)} .money.positive{color:var(--accent)}
+.muted{color:var(--muted)}
+
+/* Bottom tab bar – fixed; no weird drifting on desktop */
+nav.tabbar{
+  position:fixed; left:0; right:0;
+  bottom: env(safe-area-inset-bottom,0px);
+  height: var(--tabbar-h);
+  background:#fff;
+  border-top:1px solid #e5e7eb;
+  display:grid; grid-template-columns:repeat(6,1fr);
+  align-items:center; z-index:50;
+}
+nav.tabbar a{
+  text-decoration:none; color:#374151; font-size:12px;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+nav.tabbar a.active{color:#111827; font-weight:700}
+
+/* Menu links (Home) */
+.menu a{
+  display:flex; align-items:center; gap:10px;
+  background:#fff; color:#111; text-decoration:none;
+  border:1px solid var(--ring);
+  border-radius:12px; padding:12px; margin:8px 0;
+}
+.stat{font-size:28px; font-weight:800}
