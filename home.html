@@ -1,51 +1,417 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Home - Student Budgeting App</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Student Budgeting App</title>
+<style>
+  :root{
+    --bg:#F8FAFB;
+    --panel:#FFFFFF;
+    --ink:#0f172a;
+    --muted:#6b7280;
+    --ring:#E5E7EB;
+    --teal:#2CB9B0;     /* under/ok */
+    --coral:#FF6B6B;    /* warn/over */
+    --good:#16A34A;
+    --bad:#DC2626;
+    --tab-h:62px;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family: ui-sans-serif,-apple-system,system-ui,Segoe UI,Roboto,Arial;
+  }
+  /* Header */
+  header{
+    position:sticky; top:0; z-index:10;
+    background:#fff; border-bottom:1px solid var(--ring);
+    padding:12px 16px calc(12px + env(safe-area-inset-top,0));
+    display:flex; align-items:center; justify-content:center;
+  }
+  header h1{font-size:18px; margin:0; font-weight:800}
+  header .edge{position:absolute; left:12px; right:12px; display:flex; justify-content:space-between}
+  header .edge a{color:#111; text-decoration:none; font-size:18px}
+
+  main{flex:1 1 auto; padding:16px; padding-bottom:calc(var(--tab-h) + 24px + env(safe-area-inset-bottom,0)); overflow:auto; -webkit-overflow-scrolling:touch;}
+  .container{max-width:380px; margin:0 auto}
+
+  .card{
+    background:var(--panel); border:1px solid var(--ring); border-radius:var(--radius);
+    padding:14px; box-shadow:0 1px 0 rgba(0,0,0,.02); margin-bottom:12px;
+  }
+  .row{display:flex; gap:10px; align-items:center}
+  label{display:block; font-size:13px; color:var(--muted); margin:10px 0 6px}
+  .input, select{
+    width:100%; padding:12px 14px; border:1px solid var(--ring); border-radius:10px; background:#fff; font-size:16px;
+  }
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:12px 16px; border-radius:12px; border:1px solid var(--ring); background:#fff; cursor:pointer; font-weight:600}
+  .btn.primary{background:var(--teal); border-color:transparent; color:#fff}
+  .btn.danger{background:var(--coral); border-color:transparent; color:#fff}
+  .muted{color:var(--muted)}
+  .stat{font-size:32px; font-weight:800; margin:6px 0}
+
+  /* Progress bars */
+  .bar{height:10px; background:#eef2f7; border-radius:999px; overflow:hidden}
+  .bar > span{display:block; height:100%}
+
+  /* Lists */
+  ul.list{list-style:none; margin:0; padding:0}
+  ul.list li{display:flex; justify-content:space-between; align-items:center; padding:12px 4px; border-bottom:1px dashed #e5e7eb}
+  .money.neg{color:var(--bad)} .money.pos{color:var(--good)}
+
+  /* Tabs */
+  nav.tabbar{
+    position:fixed; left:0; right:0;
+    bottom:env(safe-area-inset-bottom,0);
+    height:var(--tab-h); background:#fff; border-top:1px solid var(--ring);
+    display:grid; grid-template-columns:repeat(5,1fr); align-items:center; z-index:50;
+  }
+  nav.tabbar button{
+    height:100%; background:none; border:0; font:inherit; color:#374151; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px
+  }
+  nav.tabbar button.active{color:#111827; font-weight:700}
+
+  /* Screens */
+  .screen{display:none}
+  .screen.active{display:block}
+
+  /* iOS modal sheet */
+  .sheet-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.25); display:none}
+  .sheet{position:fixed; left:0; right:0; bottom:0; transform:translateY(100%);
+    background:#fff; border-top-left-radius:18px; border-top-right-radius:18px; padding:16px; box-shadow:0 -10px 30px rgba(0,0,0,.15)}
+  .sheet.open + .sheet{transform:translateY(0)}
+  .open{display:block} /* for backdrop */
+</style>
 </head>
 <body>
-  <header>
-    <h1>Home</h1>
-    <a href="profile.html" class="icon">👤</a>
-  </header>
 
-  <main>
-    <div class="card">
-      <p class="muted">Your Balance</p>
-      <h2 id="balance">$0.00</h2>
-      <button class="btn primary" id="addMoneyBtn">Add Money</button>
-    </div>
+<header>
+  <h1 id="title">Dashboard</h1>
+</header>
 
-    <div class="menu">
-      <a href="expenses.html">💸 Expenses</a>
-      <a href="budget.html">📊 Budget</a>
-      <a href="activity.html">➕ Activity</a>
-      <a href="todo.html">📝 To-Do</a>
-    </div>
-  </main>
+<main>
+  <div class="container">
+    <!-- DASHBOARD -->
+    <section id="dash" class="screen active">
+      <div class="card">
+        <p class="muted">Your Balance</p>
+        <div id="balance" class="stat">$0.00</div>
+        <div class="row">
+          <button class="btn primary" id="openAdd">Quick Add</button>
+          <button class="btn" id="toggleHide">Hide</button>
+        </div>
+      </div>
 
-<nav class="tabbar">
-  <a href="home.html" class="active">🏠<span>Home</span></a>
-  <a href="profile.html">👤<span>Profile</span></a>
-  <a href="activity.html">⚙️<span>Add</span></a>
-  <a href="todo.html">🗓️<span>To-Do</span></a>
-  <a href="expenses.html">💰<span>Expenses</span></a>
-  <a href="budget.html">📈<span>Budget</span></a>
+      <div class="card">
+        <h3 style="margin:0 0 8px 0;">This Month</h3>
+        <div id="catBars"></div>
+      </div>
+    </section>
+
+    <!-- EXPENSES -->
+    <section id="expenses" class="screen">
+      <div class="row" style="margin-bottom:8px">
+        <select id="filterCat" class="input" style="max-width:55%">
+          <option value="">All Categories</option>
+        </select>
+        <input id="filterText" class="input" placeholder="Search note…" />
+      </div>
+      <ul id="expList" class="list"></ul>
+      <p>Total Spent: <b id="expTotal">$0.00</b></p>
+    </section>
+
+    <!-- BUDGET -->
+    <section id="budget" class="screen">
+      <div class="card">
+        <label for="budCat">Category</label>
+        <select id="budCat" class="input"></select>
+        <label for="budAmt">Monthly Budget</label>
+        <input id="budAmt" type="number" step="0.01" class="input" />
+        <button id="saveBud" class="btn primary" style="margin-top:10px;">Save Budget</button>
+      </div>
+      <ul id="budgetList" class="list"></ul>
+      <p>Monthly Spend: <b id="budgetSum">$0.00</b></p>
+    </section>
+
+    <!-- SAVINGS GOAL -->
+    <section id="goals" class="screen">
+      <div class="card">
+        <label>Goal Name</label><input id="goalName" class="input" value="Spring Break Trip" />
+        <label>Target Amount</label><input id="goalTarget" class="input" type="number" step="0.01" value="300" />
+        <label>Saved So Far</label><input id="goalSaved" class="input" type="number" step="0.01" />
+        <button id="saveGoal" class="btn primary" style="margin-top:10px;">Save Goal</button>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 6px 0" id="goalTitle">Spring Break Trip – $300</h3>
+        <div class="bar"><span id="goalBar" style="width:0%; background:var(--teal)"></span></div>
+        <p class="muted" id="goalText" style="margin-top:8px">0% complete</p>
+      </div>
+    </section>
+
+    <!-- PROFILE -->
+    <section id="profile" class="screen">
+      <div class="card">
+        <h3 id="profileHeading" style="margin:0 0 8px 0">Guest</h3>
+        <form id="profileForm">
+          <label>Name</label><input name="name" class="input" />
+          <label>Email</label><input name="email" class="input" type="email" />
+          <label>Phone</label><input name="phone" class="input" />
+          <label>Occupation</label><input name="occ" class="input" />
+          <button class="btn primary" style="margin-top:10px">Save</button>
+        </form>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- iOS Tab Bar -->
+<nav class="tabbar" id="tabs">
+  <button data-screen="dash" class="active">🏠<span>Home</span></button>
+  <button data-screen="expenses">💸<span>Expenses</span></button>
+  <button data-screen="budget">📊<span>Budget</span></button>
+  <button data-screen="goals">🎯<span>Goals</span></button>
+  <button data-screen="profile">👤<span>Profile</span></button>
 </nav>
 
-  <script src="shared.js"></script>
-  <script>
-    renderHome();
-    document.getElementById("addMoneyBtn").onclick = ()=> {
-      const txns = load(K.TXNS, []);
-      txns.push({id:Date.now(), kind:"income", category:"Other", amount:10,
-                 date:new Date().toISOString().slice(0,10), note:"Manual add"});
-      save(K.TXNS, txns);
-      renderHome();
-      alert("Added $10 income");
-    };
-  </script>
+<!-- Quick Add Sheet -->
+<div id="backdrop" class="sheet-backdrop"></div>
+<div id="sheet" class="sheet">
+  <h3 style="margin:0 0 10px 0">Quick Add</h3>
+  <form id="txnForm">
+    <div class="row">
+      <label><input type="radio" name="kind" value="expense" checked /> Expense</label>
+      <label><input type="radio" name="kind" value="income" /> Income</label>
+    </div>
+    <label>Category</label>
+    <select id="categorySel" class="input"></select>
+    <label>Amount</label>
+    <input id="amountInp" class="input" type="number" step="0.01" />
+    <label>Date</label>
+    <input id="dateInp" class="input" type="date" />
+    <label>Note</label>
+    <input id="noteInp" class="input" />
+    <div class="row" style="margin-top:10px">
+      <button class="btn" type="button" id="cancelAdd">Cancel</button>
+      <button class="btn primary">Add</button>
+    </div>
+  </form>
+</div>
+
+<script>
+/* ------------------ Data & Helpers ------------------ */
+const K = {
+  PROFILE:'sb_profile',
+  TXNS:'sb_txns',
+  BUDGETS:'sb_budgets',
+  GOAL:'sb_goal',
+  HIDE:'sb_hide_bal'
+};
+const CATS = ['Food','Transport','Health','Groceries','Housing','Utilities','Entertainment','Other'];
+const $ = (s,root=document)=>root.querySelector(s);
+const $$ = (s,root=document)=>Array.from(root.querySelectorAll(s));
+const money = n=>'$'+Number(n||0).toFixed(2);
+const load = (k,def)=>{ try{return JSON.parse(localStorage.getItem(k)) ?? def}catch{return def}};
+const save = (k,v)=>localStorage.setItem(k, JSON.stringify(v));
+
+/* Seed */
+(function seed(){
+  if(!localStorage.getItem(K.TXNS)){
+    save(K.TXNS,[
+      {id:1,kind:'expense',category:'Transport',amount:6.50,date:'2025-10-01',note:'Bus pass'},
+      {id:2,kind:'expense',category:'Food',amount:8.00,date:'2025-10-02',note:'Coffee + bagel'},
+      {id:3,kind:'income',category:'Other',amount:30.00,date:'2025-10-03',note:'Tutoring'}
+    ]);
+  }
+  if(!localStorage.getItem(K.BUDGETS)){
+    save(K.BUDGETS,{Food:200,Transport:60,Groceries:250,Housing:600,Utilities:120,Entertainment:80});
+  }
+  if(!localStorage.getItem(K.GOAL)){
+    save(K.GOAL,{name:'Spring Break Trip', target:300, saved:40});
+  }
+})();
+
+/* ------------------ Navigation ------------------ */
+const screens = $$('.screen');
+const tabs = $('#tabs');
+function show(id){
+  screens.forEach(s=>s.classList.toggle('active', s.id===id));
+  $$('#tabs button').forEach(b=>b.classList.toggle('active', b.dataset.screen===id));
+  $('#title').textContent =
+    id==='dash'?'Dashboard':
+    id[0].toUpperCase()+id.slice(1);
+  if(id==='dash') renderDash();
+  if(id==='expenses') renderExpenses();
+  if(id==='budget') renderBudget();
+  if(id==='goals') renderGoals();
+  if(id==='profile') renderProfile();
+}
+tabs.addEventListener('click',e=>{
+  const btn=e.target.closest('button[data-screen]');
+  if(btn) show(btn.dataset.screen);
+});
+
+/* ------------------ Dashboard ------------------ */
+function balance(){
+  return load(K.TXNS,[]).reduce((s,t)=>s+(t.kind==='income'?t.amount:-t.amount),0);
+}
+function monthlySpendByCat(){
+  const out={}; load(K.TXNS,[]).forEach(t=>{
+    if(t.kind!=='expense') return;
+    out[t.category]=(out[t.category]||0)+Number(t.amount||0);
+  }); return out;
+}
+function renderDash(){
+  const hidden=load(K.HIDE,false);
+  $('#balance').textContent = hidden ? '$•••••' : money(balance());
+  const bars = $('#catBars'); bars.innerHTML='';
+  const budgets = load(K.BUDGETS,{});
+  const spent = monthlySpendByCat();
+  Object.keys(budgets).forEach(cat=>{
+    const b = Number(budgets[cat]||0);
+    const s = Number(spent[cat]||0);
+    const pct = Math.min(100, b? Math.round((s/b)*100) : 0);
+    const ok = s <= b;
+    bars.insertAdjacentHTML('beforeend', `
+      <div style="margin:10px 0">
+        <div class="row" style="justify-content:space-between">
+          <strong>${cat}</strong>
+          <span class="muted">${money(s)} / ${money(b)}</span>
+        </div>
+        <div class="bar"><span style="width:${pct}%; background:${ok?'var(--teal)':'var(--coral)'}"></span></div>
+      </div>
+    `);
+  });
+}
+$('#toggleHide').addEventListener('click',()=>{
+  const cur=load(K.HIDE,false); save(K.HIDE,!cur); renderDash();
+});
+
+/* ------------------ Quick Add Sheet ------------------ */
+const sheet = $('#sheet'), backdrop = $('#backdrop');
+function openSheet(){ backdrop.classList.add('open'); sheet.classList.add('open') }
+function closeSheet(){ backdrop.classList.remove('open'); sheet.classList.remove('open') }
+$('#openAdd').addEventListener('click',openSheet);
+$('#cancelAdd').addEventListener('click',closeSheet);
+backdrop.addEventListener('click',closeSheet);
+
+function populateCategories(sel){
+  sel.innerHTML = CATS.map(c=>`<option>${c}</option>`).join('');
+}
+populateCategories($('#categorySel'));
+populateCategories($('#budCat'));
+populateCategories($('#filterCat'));
+$('#txnForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const txns = load(K.TXNS,[]);
+  const t = {
+    id:Date.now(),
+    kind: e.target.kind.value,
+    category: $('#categorySel').value,
+    amount: parseFloat($('#amountInp').value||'0'),
+    date: $('#dateInp').value || new Date().toISOString().slice(0,10),
+    note: $('#noteInp').value.trim()
+  };
+  if(!t.amount || t.amount<0){ alert('Enter a valid amount'); return; }
+  txns.push(t); save(K.TXNS,txns);
+  e.target.reset(); closeSheet(); renderDash();
+  alert('Transaction added!');
+});
+
+/* ------------------ Expenses ------------------ */
+function renderExpenses(){
+  const list = $('#expList'); list.innerHTML='';
+  const q = $('#filterText').value.toLowerCase();
+  const fc = $('#filterCat').value;
+  const txns = load(K.TXNS,[])
+    .filter(t=>t.kind==='expense')
+    .filter(t=> (fc? t.category===fc : true) && (q? (t.note||'').toLowerCase().includes(q) : true))
+    .sort((a,b)=>b.date.localeCompare(a.date));
+  let total=0;
+  txns.forEach(t=>{
+    total+=t.amount;
+    list.insertAdjacentHTML('beforeend',`
+      <li>
+        <div>${t.note||t.category}<div class="muted">${t.date} • ${t.category}</div></div>
+        <div class="money neg">-${money(t.amount)}</div>
+      </li>
+    `);
+  });
+  $('#expTotal').textContent = money(total);
+}
+$('#filterText').addEventListener('input',renderExpenses);
+$('#filterCat').addEventListener('change',renderExpenses);
+
+/* ------------------ Budget ------------------ */
+function renderBudget(){
+  const budgets = load(K.BUDGETS,{});
+  const spent = monthlySpendByCat();
+  const list = $('#budgetList'); list.innerHTML='';
+  let sum=0;
+  Object.keys(budgets).forEach(cat=>{
+    const b=Number(budgets[cat]||0), s=Number(spent[cat]||0); sum+=s;
+    const diff = b - s;
+    const tag = diff>=0 ? `<span class="money pos">Left ${money(diff)}</span>`
+                        : `<span class="money neg">Over ${money(Math.abs(diff))}</span>`;
+    list.insertAdjacentHTML('beforeend',`
+      <li>
+        <div>${cat}<div class="muted">Spent: ${money(s)}</div></div>
+        <div>${tag}</div>
+      </li>
+    `);
+  });
+  $('#budgetSum').textContent = money(sum);
+
+  // preload selector + amount
+  const first = $('#budCat').value || 'Food';
+  $('#budAmt').value = budgets[first] ?? '';
+}
+$('#budCat').addEventListener('change',()=>{
+  const budgets=load(K.BUDGETS,{}); $('#budAmt').value = budgets[$('#budCat').value] ?? '';
+});
+$('#saveBud').addEventListener('click',()=>{
+  const cat=$('#budCat').value; const amt=parseFloat($('#budAmt').value||'0');
+  const b=load(K.BUDGETS,{}); b[cat]=amt; save(K.BUDGETS,b);
+  renderBudget(); renderDash(); alert('Budget saved.');
+});
+
+/* ------------------ Goals ------------------ */
+function renderGoals(){
+  const g=load(K.GOAL,{name:'Goal',target:100,saved:0});
+  $('#goalName').value=g.name; $('#goalTarget').value=g.target; $('#goalSaved').value=g.saved;
+  $('#goalTitle').textContent = `${g.name} – ${money(g.target)}`;
+  const pct = Math.max(0, Math.min(100, Math.round((g.saved/g.target)*100)));
+  $('#goalBar').style.width = pct + '%';
+  $('#goalBar').style.background = 'var(--teal)';
+  $('#goalText').textContent = `${pct}% complete (${money(g.saved)} of ${money(g.target)})`;
+}
+$('#saveGoal').addEventListener('click',()=>{
+  const g={name:$('#goalName').value.trim()||'Goal',
+           target:parseFloat($('#goalTarget').value||'0'),
+           saved:parseFloat($('#goalSaved').value||'0')};
+  if(!g.target || g.target<=0){ alert('Enter a valid target'); return; }
+  save(K.GOAL,g); renderGoals(); alert('Goal updated.');
+});
+
+/* ------------------ Profile ------------------ */
+function renderProfile(){
+  const p = load(K.PROFILE,{name:'Guest',email:'',phone:'',occ:'Student'});
+  $('#profileHeading').textContent = p.name || 'Guest';
+  const f = $('#profileForm'); f.name.value=p.name; f.email.value=p.email; f.phone.value=p.phone; f.occ.value=p.occ;
+}
+$('#profileForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const f=e.target;
+  const p={name:f.name.value.trim()||'Guest', email:f.email.value.trim(), phone:f.phone.value.trim(), occ:f.occ.value.trim()||'Student'};
+  save(K.PROFILE,p); renderProfile(); alert('Profile saved!');
+});
+
+/* ------------------ Init ------------------ */
+renderDash(); // landing
+</script>
 </body>
 </html>
